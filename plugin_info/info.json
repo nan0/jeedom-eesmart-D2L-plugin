@@ -9,7 +9,7 @@
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,
 	"maxDependancyInstallTime" : 0,
-	"changelog" : "https://jeedom.github.io/plugin-template/#language#/changelog",
+	"changelog" : "https://github.com/nan0/jeedom-eesmart-D2L-plugin/changelog",
 	"documentation" : "https://jeedom.github.io/plugin-template/#language#/",
 	"link" : {
 		"forum":"Lien vers le forum",
