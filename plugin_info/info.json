@@ -1,0 +1,20 @@
+{
+	"id" : "jeedom-eesmart-D2L-plugin",
+	"name" : "eesmart D2L plugin",
+	"description" : "ERL WiFi pour compteur Linky",
+	"licence" : "AGPL",
+	"author" : "Nans Plancher",
+	"require" : "3.2",
+	"category" : "energy",
+	"hasDependency" : false,
+	"hasOwnDeamon" : false,
+	"maxDependancyInstallTime" : 0,
+	"changelog" : "https://jeedom.github.io/plugin-template/#language#/changelog",
+	"documentation" : "https://jeedom.github.io/plugin-template/#language#/",
+	"link" : {
+		"forum":"Lien vers le forum",
+		"video" : "Lien vers une video"
+	},
+	"language" : ["fr_FR","en_US","de_DE","sp_SP","ru_RU","id_ID","it_IT"],
+	"compatibility" : ["miniplus","smart","rpi","docker","diy","mobile"]
+}
