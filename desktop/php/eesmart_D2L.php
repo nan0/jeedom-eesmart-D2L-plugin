@@ -6,7 +6,6 @@ $plugin = plugin::byId('eesmart_D2L');
 sendVarToJS('eqType', $plugin->getId());
 $eqLogics = eqLogic::byType($plugin->getId());
 ?>
-<h1>Hello <?php config::byKey('consospyLogin', 'eesmart_D2L') ?></h1>
 <div class="row row-overflow">
     <div class="col-xs-12 eqLogicThumbnailDisplay">
         <legend><i class="fas fa-cog"></i> {{Gestion}}</legend>

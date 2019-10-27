@@ -17,21 +17,156 @@
  */
 
 /* * ***************************Includes********************************* */
-require_once __DIR__  . '/../../../../core/php/core.inc.php';
+require_once __DIR__ . '/../../../../core/php/core.inc.php';
 
-class eesmart_D2L extends eqLogic {
+class eesmart_D2L extends eqLogic
+{
+    public static $apiUrl = "https://consospyapi.sicame.io";
+    public static $apiKey;
+
+
     /*     * *************************Attributs****************************** */
-
 
 
     /*     * ***********************Methode static*************************** */
 
     /*
      * Fonction exécutée automatiquement toutes les minutes par Jeedom
-      public static function cron() {
-
-      }
+     *
      */
+
+
+    public static function cron()
+    {
+//        log::add('eesmart_D2L', 'debug', 'Cron log for url ' . eesmart_D2L::$apiUrl);
+
+        eesmart_D2L::$apiKey = eesmart_D2L::getApiKey(eesmart_D2L::$apiUrl, config::byKey('consospyLogin', 'eesmart_D2L'), config::byKey('consospyPassword', 'eesmart_D2L'));
+//        log::add('eesmart_D2L', 'debug', "apiKey : " . eesmart_D2L::$apiKey);
+
+        $modules = eesmart_D2L::getModules(eesmart_D2L::$apiUrl, eesmart_D2L::$apiKey);
+
+        /* TODO: implement multiple module management */
+        $firstModuleId = $modules[0]->{'idModule'};
+//        log::add('eesmart_D2L', 'debug', "idModule : " . $firstModuleId);
+
+
+//        $lastIndexes = eesmart_D2L::getLastIndexes(eesmart_D2L::$apiUrl, eesmart_D2L::$apiKey, $firstModuleId);
+//        log::add('eesmart_D2L', 'debug', "idModule : " . json_encode($lastIndexes));
+//        $todayConsumption = eesmart_D2L::getIndexesBetween(eesmart_D2L::$apiUrl, eesmart_D2L::$apiKey, $firstModuleId, $todayMorning->format('c'), $now->format('c'));
+//        $reduced = [];
+//        foreach ($todayConsumption as $data) {
+//            array_push($reduced, $data->hchpEjphpmBbrhpjb);
+//        }
+//        log::add('eesmart_D2L', 'debug', "todayConsumption log: " . json_encode($reduced));
+
+//        $consumption = $reduced[0] - $reduced[count($reduced) - 1];
+//        log::add('eesmart_D2L', 'debug', "todayConsumption : " . $consumption)  ;
+
+
+        $now = new DateTime();
+        $todayMorning = new DateTime($now->format('Y-m-d'));
+        $beginIndex = eesmart_D2L::getIndexesBetween(eesmart_D2L::$apiUrl, eesmart_D2L::$apiKey, $firstModuleId, $todayMorning->format('c'), $todayMorning->format('c'));
+        $beginConsumption = $beginIndex[0]->hchpEjphpmBbrhpjb;
+
+        $aMinuteAgo = new DateTime('-1 minutes');
+        $endIndex = eesmart_D2L::getIndexesBetween(eesmart_D2L::$apiUrl, eesmart_D2L::$apiKey, $firstModuleId, $aMinuteAgo->format('c'), $now->format('c'));
+        $endConsumption = $endIndex[0]->hchpEjphpmBbrhpjb;
+
+        $todayConsumption = $endConsumption - $beginConsumption;
+
+        log::add('eesmart_D2L', 'debug', "Today consumption : " . ($todayConsumption / 1000) . " KiloWatts");
+        log::add('eesmart_D2L', 'debug', "-\n");
+
+    }
+
+    public static function getApiKey($apiUrl, $login, $password)
+    {
+        $url = $apiUrl . "/api/D2L/Security/GetAPIKey";
+        $data = array('login' => $login, 'password' => $password);
+
+        // use key 'http' even if you send the request to https://...
+        $options = array(
+            'http' => array(
+                'header' => "Content-type: application/json\n",
+                'method' => 'POST',
+                'content' => json_encode($data)
+            )
+        );
+
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+
+        if ($result === FALSE) {
+            throw new Exception();
+        }
+
+        return json_decode($result)->{'apiKey'};
+    }
+
+
+    public static function getModules($apiUrl, $apiKey)
+    {
+        $url = $apiUrl . "/api/D2L/D2Ls";
+        $options = array(
+            'http' => array(
+                'header' => "accept: text/plain\r\n" . "APIKey: " . $apiKey . "\r\n",
+                'method' => "GET"
+            )
+        );
+
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+
+        if ($result === FALSE) {
+            throw new Exception();
+        }
+
+        return json_decode($result);
+    }
+
+    public static function getLastIndexes($apiUrl, $apiKey, $idModule)
+    {
+        $url = $apiUrl . "/api/D2L/D2Ls/" . $idModule . "/LastIndexes";
+        $options = array(
+            'http' => array(
+                'header' => "accept: text/plain\r\n" . "APIKey: " . $apiKey . "\r\n",
+                'method' => "GET"
+            )
+        );
+
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+
+        if ($result === FALSE) {
+            throw new Exception();
+        }
+
+        return json_decode($result);
+    }
+
+    public static function getIndexesBetween($apiUrl, $apiKey, $idModule, $from, $to)
+    {
+
+        $fromParam = "?from=" . urlencode($from);
+        $toParam = "&to=" . urlencode($to);
+        $url = $apiUrl . "/api/D2L/D2Ls/" . $idModule . "/IndexesBetween" . $fromParam . $toParam;
+
+        $options = array(
+            'http' => array(
+                'header' => "accept: text/plain\r\n" . "APIKey: " . $apiKey . "\r\n",
+                'method' => "GET"
+            )
+        );
+
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+
+        if ($result === FALSE) {
+            throw new Exception();
+        }
+
+        return json_decode($result);
+    }
 
 
     /*
@@ -49,39 +184,46 @@ class eesmart_D2L extends eqLogic {
      */
 
 
-
     /*     * *********************Méthodes d'instance************************* */
 
-    public function preInsert() {
-        
+    public function preInsert()
+    {
+
     }
 
-    public function postInsert() {
-        
+    public function postInsert()
+    {
+
     }
 
-    public function preSave() {
-        
+    public function preSave()
+    {
+
     }
 
-    public function postSave() {
-        
+    public function postSave()
+    {
+
     }
 
-    public function preUpdate() {
-        
+    public function preUpdate()
+    {
+
     }
 
-    public function postUpdate() {
-        
+    public function postUpdate()
+    {
+
     }
 
-    public function preRemove() {
-        
+    public function preRemove()
+    {
+
     }
 
-    public function postRemove() {
-        
+    public function postRemove()
+    {
+
     }
 
     /*
@@ -106,7 +248,8 @@ class eesmart_D2L extends eqLogic {
     /*     * **********************Getteur Setteur*************************** */
 }
 
-class eesmart_D2LCmd extends cmd {
+class eesmart_D2LCmd extends cmd
+{
     /*     * *************************Attributs****************************** */
 
 
@@ -122,8 +265,9 @@ class eesmart_D2LCmd extends cmd {
       }
      */
 
-    public function execute($_options = array()) {
-        
+    public function execute($_options = array())
+    {
+
     }
 
     /*     * **********************Getteur Setteur*************************** */
