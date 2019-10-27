@@ -1,6 +1,6 @@
 {
-	"id" : "jeedom-eesmart-D2L-plugin",
-	"name" : "eesmart D2L plugin",
+	"id" : "eesmart_D2L",
+	"name" : "Eesmart D2L",
 	"description" : "ERL WiFi pour compteur Linky",
 	"licence" : "AGPL",
 	"author" : "Nans Plancher",

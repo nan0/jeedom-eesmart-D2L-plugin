@@ -18,17 +18,20 @@
 
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
-function template_install() {
-    
+function eesmart_D2L_install()
+{
+
 }
 
-function template_update() {
-    
+function eesmart_D2L_update()
+{
+
 }
 
 
-function template_remove() {
-    
+function eesmart_D2L_remove()
+{
+
 }
 
 ?>
